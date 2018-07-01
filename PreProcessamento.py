@@ -18,6 +18,7 @@ class PreProcessamento():
         imagemHSV = np.zeros((altura, largura, 3), np.uint8)
         imagemHSV = cv2.cvtColor(imagem_original, cv2.COLOR_BGR2HSV)
         imgMatiz, imgSaturacao, imgValor = cv2.split(imagemHSV)
+        print(imgValor)
         return imgValor
 
     def melhorar_contraste(self, imagem_escala_cinza):
@@ -38,13 +39,15 @@ class PreProcessamento():
 
     def pre_process(self, imagem_original):
 
-        imagem_escala_cinza = self.extrair_valor(imagem_original)
+        """imagem_escala_cinza = self.extrair_valor(imagem_original)
         imagem_contraste_max_cinza = self.melhorar_contraste(imagem_escala_cinza)
-
         altura, largura = imagem_escala_cinza.shape
         imagem_Blurred = np.zeros((altura, largura, 1), np.uint8)
         imagem_Blurred = cv2.GaussianBlur(imagem_contraste_max_cinza, self.GAUSSIAN_SMOOTH_FILTER_SIZE, 0)
-        imagem_binaria = cv2.adaptiveThreshold(imagem_Blurred, 255.0, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, self.ADAPTIVE_THRESH_BLOCK_SIZE, self.ADAPTIVE_THRESH_WEIGHT)
+        #imagem_binaria = cv2.adaptiveThreshold(imagem_Blurred, 255.0, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, self.ADAPTIVE_THRESH_BLOCK_SIZE, self.ADAPTIVE_THRESH_WEIGHT)"""
 
-        return imagem_escala_cinza, imagem_binaria
+        cinza = cv2.cvtColor(imagem_original, cv2.COLOR_BGR2GRAY)
+        _, imagem_binaria = cv2.threshold(cinza, 90, 255, cv2.THRESH_BINARY)
+        imagem_desfocada = cv2.GaussianBlur(imagem_binaria, self.GAUSSIAN_SMOOTH_FILTER_SIZE, 0)
+        return imagem_desfocada
 
