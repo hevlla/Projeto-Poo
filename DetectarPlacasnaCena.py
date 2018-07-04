@@ -1,16 +1,13 @@
 import cv2
-import numpy as np
-from matplotlib import pyplot as plt
-from Projeto.PreProcessamento import PreProcessamento
-
-
-imagem_original = cv2.imread("placa5.jpeg")
 
 class DetectarPlacasnaCena():
     LARGURA_PADRAO_DA_PLACA = 1.3
     ALTURA_PADRAO_DA_PLACA = 1.5
 
-    def possiveisPlacasNaCena(self, imagem_desfocada):
+    TAMANHO_DO_PERIMETRO = 120
+    COR_DO_TRACO = (0, 255, 0)
+
+    def possiveisPlacasNaCena(self, imagem_desfocada, imagem_original):
         """ Neste metodo, é recebida a imagem desfocada, após ser aplicado o filtro gaussiano, e
             através do método 'cv2.findCountorns' buscamos todos os contornos, retornando um Array
             com todos os contornos presentes na imagem. Em seguida percorremos este array, de forma
@@ -23,17 +20,19 @@ class DetectarPlacasnaCena():
         _, contornos, hier = cv2.findContours(imagem_desfocada, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         regioes_retangulares = []
 
-        for c in contornos:
-            perimetro = cv2.arcLength(c, True)
-            if perimetro > 120:
-                aprox = cv2.approxPolyDP(c, 0.03 * perimetro, True)
+        for contorno in contornos:
+            perimetro = cv2.arcLength(contorno, True)
+
+            if perimetro > self.TAMANHO_DO_PERIMETRO:
+                aprox = cv2.approxPolyDP(contorno, 0.03 * perimetro, True)
+
                 if len(aprox) == 4:
-                    (x, y, alt, lar) = cv2.boundingRect(c)
-                    cv2.rectangle(imagem_original, (x, y), (x+alt, y+lar), (0, 255, 0), 2)
+                    (x, y, alt, lar) = cv2.boundingRect(contorno)
+                    cv2.rectangle(imagem_original, (x, y), (x+alt, y+lar), self.COR_DO_TRACO, 2)
                     possivel_placa = imagem_original[y:y + lar, x:x + alt]
                     regioes_retangulares.append(possivel_placa)
 
-        cv2.imshow('draw', imagem_original)
+        cv2.imshow('Possiveis Placas', imagem_original)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
         return regioes_retangulares
