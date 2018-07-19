@@ -7,7 +7,9 @@ class PreProcessamento():
     TAMANHO_DO_FILTRO_GAUSSIANO = (5, 5)
     LIMIAR = 90
     VALOR_MAXIMO = 255
-
+    img_desfocada = []
+    img_binaria = []
+    img_escala_cinza = []
 
     def extrair_valor(self, imagem_original):
         altura = imagem_original.shape[0]
@@ -37,18 +39,12 @@ class PreProcessamento():
         return imagem_escala_cinza_top_hat_minus_black_hat
 
     def pre_process(self, imagem_original):
-
-        """ADAPTIVE_THRESH_BLOCK_SIZE = 19
-           ADAPTIVE_THRESH_WEIGHT = 9
-        imagem_escala_cinza = self.extrair_valor(imagem_original)
-        imagem_contraste_max_cinza = self.melhorar_contraste(imagem_escala_cinza)
-        altura, largura = imagem_escala_cinza.shape
-        imagem_Blurred = np.zeros((altura, largura, 1), np.uint8)
-        imagem_Blurred = cv2.GaussianBlur(imagem_contraste_max_cinza, self.GAUSSIAN_SMOOTH_FILTER_SIZE, 0)
-        #imagem_binaria = cv2.adaptiveThreshold(imagem_Blurred, 255.0, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, self.ADAPTIVE_THRESH_BLOCK_SIZE, self.ADAPTIVE_THRESH_WEIGHT)"""
-
         cinza = cv2.cvtColor(imagem_original, cv2.COLOR_BGR2GRAY)
         _, imagem_binaria = cv2.threshold(cinza, self.LIMIAR, self.VALOR_MAXIMO, cv2.THRESH_BINARY)
         imagem_desfocada = cv2.GaussianBlur(imagem_binaria, self.TAMANHO_DO_FILTRO_GAUSSIANO, 0)
+        self.img_desfocada = imagem_desfocada
+        self.img_binaria = imagem_binaria
+        self.img_escala_cinza = cinza
+
         return imagem_desfocada, imagem_binaria
 
