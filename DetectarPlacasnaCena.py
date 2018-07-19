@@ -19,20 +19,20 @@ class DetectarPlacasnaCena():
             """
         _, contornos, hier = cv2.findContours(imagem_desfocada, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         regioes_retangulares = []
+        imagem_copia = imagem_original
 
         for contorno in contornos:
             perimetro = cv2.arcLength(contorno, True)
-
             if perimetro > self.TAMANHO_DO_PERIMETRO:
                 aprox = cv2.approxPolyDP(contorno, 0.03 * perimetro, True)
 
                 if len(aprox) == 4:
                     (x, y, alt, lar) = cv2.boundingRect(contorno)
-                    cv2.rectangle(imagem_original, (x, y), (x+alt, y+lar), self.COR_DO_TRACO, 2)
-                    possivel_placa = imagem_original[y:y + lar, x:x + alt]
+                    cv2.rectangle(imagem_copia, (x, y), (x+alt, y+lar), self.COR_DO_TRACO, 2)
+                    possivel_placa = imagem_copia[y:y + lar, x:x + alt]
                     regioes_retangulares.append(possivel_placa)
 
-        cv2.imshow('Possiveis Placas', imagem_original)
+        cv2.imshow('Possiveis Placas', imagem_copia)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
         return regioes_retangulares
