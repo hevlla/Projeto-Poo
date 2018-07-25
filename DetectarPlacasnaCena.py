@@ -7,6 +7,9 @@ class DetectarPlacasnaCena():
     TAMANHO_DO_PERIMETRO = 120
     COR_DO_TRACO = (0, 255, 0)
 
+    def __init__(self):
+        pass
+
     def possiveisPlacasNaCena(self, imagem_desfocada, imagem_original):
         """ Neste metodo, é recebida a imagem desfocada, após ser aplicado o filtro gaussiano, e
             através do método 'cv2.findCountorns' buscamos todos os contornos, retornando um Array
@@ -19,7 +22,7 @@ class DetectarPlacasnaCena():
             """
         _, contornos, hier = cv2.findContours(imagem_desfocada, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         regioes_retangulares = []
-        imagem_copia = imagem_original
+        imagem_copia = imagem_original.copy()
 
         for contorno in contornos:
             perimetro = cv2.arcLength(contorno, True)
@@ -28,12 +31,16 @@ class DetectarPlacasnaCena():
 
                 if len(aprox) == 4:
                     (x, y, alt, lar) = cv2.boundingRect(contorno)
-                    cv2.rectangle(imagem_copia, (x, y), (x+alt, y+lar), self.COR_DO_TRACO, 2)
-                    possivel_placa = imagem_copia[y:y + lar, x:x + alt]
-                    regioes_retangulares.append(possivel_placa)
+                    possivel_placa = imagem_original[y:y + lar, x:x + alt]
+                    altura, largura, canais = possivel_placa.shape
 
-        cv2.imshow('Possiveis Placas', imagem_copia)
+                    if(altura < largura):
+                        cv2.rectangle(imagem_copia, (x, y), (x + alt, y + lar), self.COR_DO_TRACO, 2)
+                        regioes_retangulares.append(possivel_placa)
+
+        cv2.imshow("Placa", imagem_original)
         cv2.waitKey(0)
+
         cv2.destroyAllWindows()
         return regioes_retangulares
 
