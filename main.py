@@ -1,40 +1,49 @@
+import argparse
+from POO.Classes.PreProcessamento import PreProcessamento
+from POO.Classes.DetectarPlacasnaCena import DetectarPlacasnaCena
+from POO.Classes.DetectaCaracteresNaPlaca import DetectaCaracteres
 import cv2
-from Projeto.PreProcessamento import PreProcessamento
-from Projeto.DetectarPlacasnaCena import DetectarPlacasnaCena
-from Projeto.DetectarCaracteresNaPlaca import DetectaCaracteres
-from Projeto.ReconhecimentoOCR import ReconhecerNumeros
-from PIL import Image
-imagem_original = cv2.imread("placa4.JPG")
 
-altura, largura, canais = imagem_original.shape
-metade = int(altura / 2)
-imagem_original = imagem_original[int(altura / 2): altura, 0: largura]
-cv2.imshow("copia", imagem_original)
-cv2.waitKey(0)
+class Segmentacao:
 
-possiveis_placas = DetectarPlacasnaCena()
-tratar_imagem = PreProcessamento()
-imagem_desfocada, imagem_binaria = tratar_imagem.pre_process(imagem_original)
-cv2.imshow("kk", imagem_desfocada)
-cv2.waitKey(0)
+    def __init__(self):
+        pass
 
-possiveis_placas = possiveis_placas.possiveisPlacasNaCena(imagem_desfocada, imagem_original)
-placa_final = []
-detectar = DetectaCaracteres()
-for placa in possiveis_placas:
-    imagem_desfocada2, imagemplaca = detectar.tratamento_da_placa(placa)
-    quan_de_carac = detectar.detectaCaracteres(imagem_desfocada2, imagemplaca)
-    if(len(quan_de_carac) > 7):
-        placa_final = placa
+    def Segment(self, imagem_original):
+        altura, largura, canais = imagem_original.shape
+        imagem_original = imagem_original[int(altura / 2): altura, 0: largura]
 
+        possiveis_placas = DetectarPlacasnaCena()
+        tratar_imagem = PreProcessamento()
+        imagem_desfocada, imagem_binaria = tratar_imagem.simple_pre_process(imagem_original)
 
+        cv2.imwrite("/home/claudio/Documents/ProcessResult/ImagemDesfocada.jpg", imagem_desfocada)
 
-desfocada, placaFi = detectar.tratamento_da_placa(placa_final)
-cv2.imshow("PlacaFi", placaFi)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+        possiveis_placas = possiveis_placas.possiveisPlacasNaCena(imagem_desfocada, imagem_original)
 
-reconhecer = ReconhecerNumeros()
+        placa_final = []
+        detectar = DetectaCaracteres()
+
+        for placa in possiveis_placas:
+            placa_desfocada, possivel_placa = detectar.tratamento_da_placa(placa)
+            quan_de_carac = detectar.detectaCaracteres(placa_desfocada, possivel_placa)
+            altura, largura, canais = placa.shape
+
+            if(altura < largura and len(quan_de_carac) > 6):
+                placa_final = placa
+
+        placa_desfocada, possivel_placa = detectar.tratamento_da_placa(placa_final)
+        detectar.detectaCaracteres(placa_desfocada, possivel_placa)
+
+        desfocada, placaFi = detectar.tratamento_da_placa(placa_final)
+        cv2.imwrite("/home/claudio/Documents/ProcessResult/PlacaFinal.png", placaFi)
 
 
-reconhecer.reconhecimentoOCR("C:/placa3")
+ap = argparse.ArgumentParser()
+ap.add_argument("-i", "--image", required=True, help="Path to the input image")
+args = vars(ap.parse_args())
+imagem_original = cv2.imread(args["image"])
+
+
+seg = Segmentacao()
+seg.Segment(imagem_original)
